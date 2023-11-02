@@ -13,3 +13,13 @@ from ...schema.schemas import UserRequest, TokenResponse
 router = APIRouter(tags=["authorization"])
 
 
+@router.post("/login", status_code=status.HTTP_200_OK, response_model=TokenResponse)
+async def login(user: UserRequest):
+    async with httpx.AsyncClient() as client:
+        response = await client.post(f'{ACCOUNT_ENDPOINT}/login', json=user.dict())
+    return {
+        "access_token": create_access_token(response.json()['id']),
+        "refresh_token": create_refresh_token(response.json()['id'])
+    }
+
+
