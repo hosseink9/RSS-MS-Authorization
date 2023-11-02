@@ -23,3 +23,8 @@ async def login(user: UserRequest):
     }
 
 
+@router.post("/signup", status_code=status.HTTP_200_OK)
+async def signup(user: UserRequest):
+    async with httpx.AsyncClient() as client:
+        response = await client.post(f'{ACCOUNT_ENDPOINT}/signup', json=user.dict())
+    return response.json()
