@@ -42,3 +42,11 @@ async def signup(user: UserRequest):
     async with httpx.AsyncClient() as client:
         response = await client.post(f'{ACCOUNT_ENDPOINT}/signup', json=user.dict())
     return response.json()
+
+
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(request: Request):
+    bearer = request.headers.get("Authorization")
+    token = bearer.split(' ')[1]
+    await delete_refresh_token(token)
+    return {"detail": "logout"}
