@@ -65,3 +65,11 @@ async def refresh_token_store(refresh_token):
     return result
 
 
+async def delete_refresh_token(token):
+    payload = jwt.decode(token, config.JWT_SECRET_KEY,
+                         algorithms=[config.ALGORITHM])
+    user_id = payload['user_id']
+
+    jti = payload['jti']
+    redis = RedisDB()
+    await redis.delete_data(key=f"user_{user_id} | {jti}")
