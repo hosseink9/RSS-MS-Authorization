@@ -8,3 +8,10 @@ from ..core import config
 from ..db.db import RedisDB
 
 
+def generate_jti():
+    return str(uuid4().hex)
+
+
+jti = generate_jti()
+
+
