@@ -51,3 +51,17 @@ def create_refresh_token(subject: Union[str, Any], expires_delta: int = None) ->
     return encoded_jwt
 
 
+async def refresh_token_store(refresh_token):
+    payload = jwt.decode(
+        refresh_token, config.JWT_SECRET_KEY, algorithms=['HS256'])
+    user_id = payload.get("user_id")
+    jti = payload.get("jti")
+    exp_date = payload.get('exp')
+    iat = payload.get('iat')
+    timeout = exp_date - iat
+    redis = RedisDB()
+    result = await redis.set_data(
+        key=f"user_{user_id} | {jti}", value=exp_date, timeout=timeout)
+    return result
+
+
