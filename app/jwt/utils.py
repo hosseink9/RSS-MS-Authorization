@@ -15,3 +15,21 @@ def generate_jti():
 jti = generate_jti()
 
 
+def create_access_token(subject: Union[str, Any], expires_delta: int = None) -> str:
+    if expires_delta is not None:
+        expires_delta = datetime.utcnow() + expires_delta
+    else:
+        expires_delta = datetime.utcnow() + timedelta(minutes=config.ACCESS_TOKEN_EXPIRE_MINUTES)
+
+    iat = datetime.utcnow()
+    payload = {
+        'user_id': subject,
+        'exp': expires_delta,
+        'iat': iat,
+        'jti': jti
+    }
+    encode_jwt = jwt.encode(payload,
+                            config.JWT_SECRET_KEY, config.ALGORITHM)
+    return encode_jwt
+
+
