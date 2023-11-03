@@ -20,9 +20,20 @@ router = APIRouter(tags=["authorization"])
 async def login(user: UserRequest):
     async with httpx.AsyncClient() as client:
         response = await client.post(f'{ACCOUNT_ENDPOINT}/login', json=user.dict())
+        if response.status_code == status.HTTP_404_NOT_FOUND:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User was not found")
+        elif response.status_code == status.HTTP_401_UNAUTHORIZED:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Password")
+
+    access_token = create_access_token(response.json()['id'])
+    refresh_token = create_refresh_token(response.json()['id'])
+    await refresh_token_store(refresh_token)
+
     return {
-        "access_token": create_access_token(response.json()['id']),
-        "refresh_token": create_refresh_token(response.json()['id'])
+        "access_token": access_token,
+        "refresh_token": refresh_token
     }
 
 
