@@ -27,8 +27,11 @@ async def send_otp(user: UserRequest):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Password")
 
-    access_token = create_access_token(response.json()['id'])
-    refresh_token = create_refresh_token(response.json()['id'])
+    async with httpx.AsyncClient() as client:
+        result = await client.post(CREATE_OTP_ENDPOINT, json=response.json())
+
+    return result.json()
+
     await refresh_token_store(refresh_token)
 
     return {
