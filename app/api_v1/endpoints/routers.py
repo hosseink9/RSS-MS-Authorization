@@ -9,15 +9,15 @@ from ...jwt.utils import (
     refresh_token_store,
     delete_refresh_token
 )
-from ...core.config import ACCOUNT_ENDPOINT
-from ...schema.schemas import UserRequest, TokenResponse
+from ...core.config import ACCOUNT_ENDPOINT, CREATE_OTP_ENDPOINT, VERIFY_OTP_ENDPOINT
+from ...schema.schemas import Otp, UserRequest, TokenResponse
 from ...db.db import RedisDB
 
 router = APIRouter(tags=["authorization"])
 
 
-@router.post("/login", status_code=status.HTTP_200_OK, response_model=TokenResponse)
-async def login(user: UserRequest):
+@router.post("/send_otp", status_code=status.HTTP_200_OK)
+async def send_otp(user: UserRequest):
     async with httpx.AsyncClient() as client:
         response = await client.post(f'{ACCOUNT_ENDPOINT}/login', json=user.dict())
         if response.status_code == status.HTTP_404_NOT_FOUND:
