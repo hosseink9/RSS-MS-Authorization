@@ -32,6 +32,17 @@ async def send_otp(user: UserRequest):
 
     return result.json()
 
+
+@router.post("/verify_otp", status_code=status.HTTP_200_OK, response_model=TokenResponse)
+async def verify_otp(otp: Otp):
+    async with httpx.AsyncClient() as client:
+        response = await client.post(VERIFY_OTP_ENDPOINT, json=otp.dict())
+        if response.status_code == status.HTTP_404_NOT_FOUND:
+            raise HTTPException(status.HTTP_404_NOT_FOUND,
+                                'Invalid otp !!')
+
+    access_token = create_access_token(response.json())
+    refresh_token = create_refresh_token(response.json())
     await refresh_token_store(refresh_token)
 
     return {
