@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import os
 from typing import Union, Any
+from fastapi import HTTPException, status
 from jose import jwt
 from uuid import uuid4
 
@@ -69,7 +70,10 @@ async def delete_refresh_token(token):
     payload = jwt.decode(token, config.JWT_SECRET_KEY,
                          algorithms=[config.ALGORITHM])
     user_id = payload['user_id']
-
     jti = payload['jti']
     redis = RedisDB()
+    result = await redis.get_data(key=f"user_{user_id} | {jti}")
+    if result is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND,
+                            "User was logged out !!")
     await redis.delete_data(key=f"user_{user_id} | {jti}")
