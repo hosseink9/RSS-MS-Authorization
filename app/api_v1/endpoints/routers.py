@@ -10,7 +10,7 @@ from ...jwt.utils import (
     delete_refresh_token
 )
 from ...core.config import ACCOUNT_ENDPOINT, CREATE_OTP_ENDPOINT, VERIFY_OTP_ENDPOINT
-from ...schema.schemas import Otp, UserRequest, TokenResponse
+from ...schema.schemas import Otp, UserRequest, TokenResponse, UserResponse
 from ...db.db import RedisDB
 
 router = APIRouter(tags=["authorization"])
@@ -51,10 +51,15 @@ async def verify_otp(otp: Otp):
     }
 
 
-@router.post("/signup", status_code=status.HTTP_200_OK)
+@router.post("/signup", status_code=status.HTTP_200_OK, response_model=UserResponse)
 async def signup(user: UserRequest):
     async with httpx.AsyncClient() as client:
         response = await client.post(f'{ACCOUNT_ENDPOINT}/signup', json=user.dict())
+        if response.status_code == status.HTTP_400_BAD_REQUEST:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User with this username already exist"
+            )
     return response.json()
 
 
